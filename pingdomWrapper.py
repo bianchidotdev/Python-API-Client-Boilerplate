@@ -11,12 +11,23 @@ import os
 import sys
 from enum import Enum
 
-# TODO get LOG_LEVEL or DEBUG from env vars
-# logging.basicConfig(stream=sys.stdout, level=logging.DEBUG)
+
 logger = logging.getLogger('pingdom.pingdomWrapper')
 handler = logging.StreamHandler(sys.stdout)
-logger.setLevel(logging.DEBUG)
 logger.addHandler(handler)
+
+# Get log level from env vars
+log_level = os.environ.get('LOG_LEVEL', 'INFO').upper()
+if os.environ.get('DEBUG'):
+    if log_level:
+        logger.warn("Overriding LOG_LEVEL setting with DEBUG")
+    log_level = 'DEBUG'
+
+try:
+    logger.setLevel(log_level)
+except ValueError:
+    logger.setLevel(logging.INFO)
+    logger.warn("Variable LOG_LEVEL not valid - Setting Log Level to INFO")
 
 
 class AuthenticationError(Exception):
@@ -137,10 +148,13 @@ class Pingdom(object):
         req = requests.Request(method, url, params=query_params, json=body)
         prepped = self.session.prepare_request(req)
 
+        # Log request prior to sending
         self._pprint_request(prepped)
 
+        # Actually make request to endpoint
         r = self.session.send(prepped)
 
+        # Log response immediately upon return
         self._pprint_response(r)
 
         # Handle all response codes as elegantly as needed in a single spot
@@ -184,6 +198,9 @@ class Pingdom(object):
                             prepped.headers.items())
         # Print body if present or empty string if not
         body = prepped.body or ""
+
+        logger.info("Requesting {} to {}".format(method, url))
+
         logger.debug(
             '{}\n{} {} HTTP/1.1\n{}\n\n{}'.format(
                 '-----------REQUEST-----------',
@@ -212,6 +229,16 @@ class Pingdom(object):
         headers = '\n'.join('{}: {}'.format(k, v) for k, v in
                             r.headers.items())
         body = r.text or ""
+        # Convert timedelta to milliseconds
+        elapsed = floor(r.elapsed.total_seconds() * 1000)
+
+        logger.info(
+            "Response {} {} received in {}ms".format(
+                status_code,
+                status_text,
+                elapsed
+            )
+        )
 
         logger.debug(
             '{}\n{} {} {}\n{}\n\n{}'.format(
