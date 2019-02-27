@@ -11,10 +11,19 @@ import os
 import sys
 from enum import Enum
 
-
+# Set up basic logger
 logger = logging.getLogger('pingdom.pingdomWrapper')
-handler = logging.StreamHandler(sys.stdout)
-logger.addHandler(handler)
+
+# Setup stdout logger
+soh = logging.StreamHandler(sys.stdout)
+# Can optionally set logging levels per handler
+# soh.setLevel(logging.WARN)
+logger.addHandler(soh)
+
+# File handler for logging to a file
+# fh = logging.FileHandler('apiWrapper.log')
+# fh.setLevel(logging.DEBUG)
+# logger.addHandler(fh)
 
 # Get log level from env vars
 log_level = os.environ.get('LOG_LEVEL', 'INFO').upper()
@@ -46,7 +55,8 @@ class Pingdom(object):
         client_app_secret=None,
         user_oauth_token=None,
         user_oauth_token_secret=None,
-        api_app_key=None
+        api_app_key=None,
+        auth_type=None
     ):
         '''Set up client for API communications
            This is where you'll need to specify all the authentication and
@@ -67,7 +77,8 @@ class Pingdom(object):
         # If interested in using a config file instead of env vars, load with
         # self._load_key(config_key, path)
         # Feel free to clear out auth methods not implemented by the API
-        auth_type = AuthType[os.getenv('AUTHTYPE', default='NONE')]
+        if not auth_type:
+            auth_type = AuthType[os.getenv('AUTHTYPE', default='NONE')]
         if (auth_type == AuthType.HTTPBASICAUTH or
                 auth_type == AuthType.HTTPDIGESTAUTH):
             if not user:
@@ -343,7 +354,11 @@ class Pingdom(object):
 
 
 if __name__ == "__main__":
-    account = Pingdom('test@example.com', 'password')
+    account = Pingdom(
+        'test@example.com',
+        'password',
+        auth_type=AuthType.HTTPBASICAUTH
+    )
     from_datetime = datetime.now()
     to_datetime = datetime.now() + timedelta(1)
     account.list_checks()
