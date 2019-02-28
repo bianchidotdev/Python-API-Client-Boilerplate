@@ -185,6 +185,8 @@ class Pingdom(object):
                 raise AuthenticationError(resp_json)
             except ValueError:
                 raise
+        
+        # TODO handle rate limiting gracefully
 
         # Raises HTTP error if status_code is 4XX or 5XX
         elif r.status_code >= 400:
@@ -261,6 +263,15 @@ class Pingdom(object):
                 body
             )
         )
+
+    def make_request(
+        self,
+        endpoint,
+        method,
+        query_params=None,
+        body=None
+    ):
+        return self._make_request(endpoint, method, query_params, body)
 
     def list_checks(
             self,
