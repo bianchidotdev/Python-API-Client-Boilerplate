@@ -1,6 +1,23 @@
 # Python Client Boilerplate
 
-Description
+This project's aim is to facilitate the consumption of APIs that do not have a provided Python SDK (or a poorly written Python SDK). 
+
+Many services out ther provide great SDKs with much more tailored features than could be provided generally. However, there are others that either provide just an API endpoint, with no SDKs, or only a small subset of SDKs, limited to the languages they are using internally. 
+
+After stumbling across several of these services, and after failing to find a clear and simple example or generator for Python API wrappers, I decided to publish this, which is a simple bare-bones API client that implements extensive logging for debugging and other best practices I've found along the way.
+
+Notable mention to [Tapioca](https://github.com/vintasoftware/tapioca-wrapper), which is a better place to start if you want a much more fully fledged API client, but which provides less visibility and customizability into the core.
+
+
+## Code Flow
+
+Everything starts with the Client class. The Client class will handle establishing the session that will be used across all successive requests as well as the authentication used.
+
+One of the main design decisions here was to pass every single request through an internal `_make_request` function on the Client, which also handles logging the request and response, handling response status codes, and parsing the response.
+
+From the get-go, you will always be able to use the public `make_request` function which requires you to specify the endpoint, and optionally, the method, query params, or a body.
+
+However, the real value from having an API client comes from implementing all the other functions to pass in native Python objects (like a list of tags or a datetime object) and have it converted to the correct format accepted by the API (like a comma-delimited string, or seconds since the epoch). Since this is so specific to the API, this will need to be done manually, but the `make_request` function will give you the foundation for communications until you implement API-specific functions.
 
 By default, all responses will parsed as JSON, and will default to text if not valid JSON.
 
