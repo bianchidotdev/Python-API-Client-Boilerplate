@@ -53,7 +53,7 @@ export CLIENT_PASSWORD='4r3L1ygO0dp45$w0rd!12345'
 
 Example VSCode:
 
-![VSCode Env Var](images/vscodeEnvVar)
+![VSCode Env Var](images/vscodeEnvVar.png)
 
 ### Simple Test
 
