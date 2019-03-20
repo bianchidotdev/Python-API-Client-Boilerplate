@@ -11,8 +11,11 @@ import os
 import sys
 from enum import Enum
 
+# Set URL for the client
+URL = 'https://api.pingdom.com'
+
 # Set up basic logger
-logger = logging.getLogger('pingdom.pingdomWrapper')
+logger = logging.getLogger('pingdom.pingdomClient')
 
 # Setup stdout logger
 soh = logging.StreamHandler(sys.stdout)
@@ -69,16 +72,16 @@ class Pingdom(object):
            source of credential leaks
         '''
         # Setup Host here
-        self.url = 'https://api.pingdom.com'
+        self.url = URL
         # Setup Session object for all future API calls
         self.session = requests.Session()
 
         # Setup authentication
         # If interested in using a config file instead of env vars, load with
-        # self._load_key(config_key, path)
+        # self._load_key_yml(config_key, path)
         # Feel free to clear out auth methods not implemented by the API
         if not auth_type:
-            auth_type = AuthType[os.getenv('AUTHTYPE', default='NONE')]
+            auth_type = AuthType[os.getenv('AUTH_TYPE', default='NONE')]
         if (auth_type == AuthType.HTTPBASICAUTH or
                 auth_type == AuthType.HTTPDIGESTAUTH):
             if not user:
@@ -127,7 +130,7 @@ class Pingdom(object):
             logger.info('Authentication Failed!')
             raise AuthenticationError('Authentication Failed!')
 
-    def _load_key(self, config_key, path):
+    def _load_key_yml(self, config_key, path):
         '''Example function for loading config values from a yml file
         '''
         with open(path) as stream:
@@ -185,7 +188,7 @@ class Pingdom(object):
                 raise AuthenticationError(resp_json)
             except ValueError:
                 raise
-        
+
         # TODO handle rate limiting gracefully
 
         # Raises HTTP error if status_code is 4XX or 5XX
@@ -207,6 +210,7 @@ class Pingdom(object):
         '''
         method = prepped.method
         url = prepped.path_url
+        # TODO retrieve HTTP version
         headers = '\n'.join('{}: {}'.format(k, v) for k, v in
                             prepped.headers.items())
         # Print body if present or empty string if not
@@ -267,7 +271,7 @@ class Pingdom(object):
     def make_request(
         self,
         endpoint,
-        method,
+        method="GET",
         query_params=None,
         body=None
     ):
@@ -366,8 +370,8 @@ class Pingdom(object):
 
 if __name__ == "__main__":
     account = Pingdom(
-        'test@example.com',
-        'password',
+        user='test@pingdom.com',
+        password='password',
         auth_type=AuthType.HTTPBASICAUTH
     )
     from_datetime = datetime.now()
