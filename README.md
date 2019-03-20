@@ -80,11 +80,11 @@ Assuming this `exampleClient.py` file is in the same directory as your consuming
 ```py
 import Example from exampleClient
 
-example_client = Example() # instantiates a client object - uses environment variables for auth if present
-resources = example.make_request('/api/v1/resources') # will send a GET request to the resources endpoint
-users = example.get_users() # 
+client = Example() # instantiates a client object - uses environment variables for auth if present
+resources = client.make_request('/api/v1/resources') # will send a GET request to the resources endpoint
+users = client.get_users() # 
 
-john = example.get_user(id="12") # returns the user object for John
+john = client.get_user(id="12") # returns the user object for John
 ```
 
 ## Roadmap
